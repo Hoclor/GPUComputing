@@ -150,9 +150,9 @@ void pack_b(int start, const int n, const double *b, const int ldb) {
  */
 void micro_kernel() {
     // Create a counter variable to keep track of which index of kernel_output we're inserting into
-    int counter = 0;
     // Loop over each column in A_packed and row in B_packed as pairs (i.e. column 0 row 0, column 1 row 1, etc.)
     for(int index = 0; index < k_c; index++) {
+        int counter = 0;
         // Loop over each value in the row of B_packed
         for(int B_val = 0; B_val < n_r; B_val++) {
             // Loop over each value in the column of A_packed
@@ -160,7 +160,7 @@ void micro_kernel() {
                 // Multiply the values together, and store the result in kernel_output
                 // As we loop over the row first and the column second, the output will automatically be in column-major format
                 // The correct value of A_packed is found at [A_val + index*m_r], as index tracks which column we're in, and each column is m_r long. The value in B_packed is similarly found at [B_val + index*n_r], as each row is n_r long.
-                kernel_output[counter] = A_packed[A_val + index*m_r] * B_packed[B_val + index*n_r];
+                kernel_output[counter] += A_packed[A_val + index*m_r] * B_packed[B_val + index*n_r];
                 // Increment the counter variable
                 counter++;
             }
