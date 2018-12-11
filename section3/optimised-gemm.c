@@ -2,12 +2,16 @@ void basic_gemm(int, int, int,
                 const double *, int,
                 const double *, int,
                 double *, int);
+#include <stdio.h>
+#include <stdlib.h>
 
 const int m_r = 4;
 const int n_r = 8;
 const int k_c = 256;
 const int m_c = 512;
-const double *A_packed;
+
+double *A_packed;
+double *B_packed;
 
 /* TODO
  *
@@ -133,4 +137,40 @@ void pack_b(int start, const int n, const double *b, const int ldb) {
             }
         }
     }
+}
+
+/* Main function used for testing as required.
+ *
+ * Currently set up to test A_packed (make sure the correct m_r, n_r, k_c, m_c values are set)
+ */
+int main(int argc, char const *argv[])
+{
+    double *b = calloc(16, sizeof(double));
+    A_packed = calloc(16, sizeof(double));
+    b[0] = 0;
+    b[1] = 4;
+    b[2] = 8;
+    b[3] = 12;
+    b[4] = 1;
+    b[5] = 5;
+    b[6] = 9;
+    b[7] = 13;
+    b[8] = 2;
+    b[9] = 6;
+    b[10] = 10;
+    b[11] = 14;
+    b[12] = 3;
+    b[13] = 7;
+    b[14] = 11;
+    b[15] = 15;
+    int start = 0;
+    int lda = 4;
+
+    pack_a(start, b, lda);
+
+    for(int i = 0; i < 16; i++) {
+        printf("%d: %f\n", i, A_packed[i]);
+    }
+    
+    return 0;
 }
