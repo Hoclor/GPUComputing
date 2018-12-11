@@ -3,10 +3,14 @@ void basic_gemm(int, int, int,
                 const double *, int,
                 double *, int);
 
-const int m_r = 4;
-const int n_r = 8;
-const int k_c = 256;
-const int m_c = 512;
+// const int m_r = 4;
+// const int n_r = 8;
+// const int k_c = 256;
+// const int m_c = 512;
+const int m_r = 2;
+const int n_r = 2;
+const int k_c = 4;
+const int m_c = 4;
 
 // Global variable to store the packed subarray of A
 double *A_packed;
@@ -174,8 +178,28 @@ void micro_kernel() {
  */
 int main(int argc, char const *argv[])
 {
-    double *b = calloc(16, sizeof(double));
     A_packed = calloc(16, sizeof(double));
+    B_packed = calloc(16, sizeof(double));
+    kernel_output = calloc(16, sizeof(double));
+    double *b = calloc(16, sizeof(double));
+    double *a = calloc(16, sizeof(double));
+
+    a[0] = 0;
+    a[1] = 4;
+    a[2] = 8;
+    a[3] = 12;
+    a[4] = 1;
+    a[5] = 5;
+    a[6] = 9;
+    a[7] = 13;
+    a[8] = 2;
+    a[9] = 6;
+    a[10] = 10;
+    a[11] = 14;
+    a[12] = 3;
+    a[13] = 7;
+    a[14] = 11;
+    a[15] = 15;
     b[0] = 0;
     b[1] = 4;
     b[2] = 8;
@@ -194,11 +218,15 @@ int main(int argc, char const *argv[])
     b[15] = 15;
     int start = 0;
     int lda = 4;
+    int ldb = 4;
+    int n = 4;
 
-    pack_a(start, b, lda);
+    pack_a(start, a, lda);
+    pack_b(start, n, b, ldb);
+    micro_kernel();
 
     for(int i = 0; i < 16; i++) {
-        printf("%d: %f\n", i, A_packed[i]);
+        printf("%d: %f\n", i, kernel_output[i]);
     }
     
     return 0;
