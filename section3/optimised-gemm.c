@@ -2,8 +2,6 @@ void basic_gemm(int, int, int,
                 const double *, int,
                 const double *, int,
                 double *, int);
-#include <stdio.h>
-#include <stdlib.h>
 
 const int m_r = 4;
 const int n_r = 8;
