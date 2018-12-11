@@ -3,6 +3,27 @@ void basic_gemm(int, int, int,
                 const double *, int,
                 double *, int);
 
+const int m_r = 4;
+const int n_r = 8;
+const int k_c = 256;
+const int m_c = 512;
+const double *A_packed;
+
+/* TODO
+ *
+ * 1. Implement B packing function
+ * 2. Implement A packing function
+ * 3. Rewrite basic-gemm for mix of column-major and row-major formats
+ * 4. Write the correct indexing logic for each loop:
+ *      - Loop 1
+ *      - Loop 2
+ *      - Loop 3
+ *      - Loop 4
+ *      - Loop 5
+ *      - Loop 6
+ */
+
+
 /* Compute C = C + A*B
  *
  * C has rank m x n
