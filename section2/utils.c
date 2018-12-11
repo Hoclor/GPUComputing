@@ -79,9 +79,9 @@ void alloc_sparse(int m, int n, int NZ, COO *sparse)
  */
 void realloc_sparse(int NZ, COO *sparse)
 {
-    (*C)->NZ = NZ;
-    (*C)->coords = calloc(NZ, sizeof(struct coord));
-    (*C)->data = calloc(NZ, sizeof(double));
+    (*sparse)->NZ = NZ;
+    (*sparse)->coords = calloc(NZ, sizeof(struct coord));
+    (*sparse)->data = calloc(NZ, sizeof(double));
 }
 
 /*
