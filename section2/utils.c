@@ -73,6 +73,18 @@ void alloc_sparse(int m, int n, int NZ, COO *sparse)
 }
 
 /*
+ * Reallocate a sparse matrix in coordinate format.
+ * NZ - number of nonzeros
+ * sparse - previously allocated matrix.
+ */
+void realloc_sparse(int NZ, COO *sparse)
+{
+    (*C)->NZ = NZ;
+    (*C)->coords = calloc(NZ, sizeof(struct coord));
+    (*C)->data = calloc(NZ, sizeof(double));
+}
+
+/*
  * Free a sparse matrix.
  * sparse - sparse matrix, may be NULL
  */

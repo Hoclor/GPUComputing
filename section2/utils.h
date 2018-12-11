@@ -16,6 +16,7 @@ struct _p_COO {
 typedef struct _p_COO *COO;
 
 void alloc_sparse(int, int, int, COO*);
+void realloc_sparse(int, COO*);
 void free_sparse(COO*);
 void alloc_dense(int, int, double **);
 void free_dense(double **);
