@@ -74,3 +74,33 @@ void optimised_gemm(int m, int n, int k,
         }
     }
 }
+
+/* Pack B from the given start index as needed for BLIS.
+ * 
+ * Output is returned using the global B_packed variable
+ */
+void pack_b(int start, const int n, const double *b, const int ldb) {
+    // Output is stored in B_packed
+
+    // store which index you're inserting into
+    int output_index = 0;
+
+    // Loop over each column in the output
+    for(int column = 0; column < n/n_r; column++) {
+        // Loop over each line in this column
+        for(int line = 0; line < k_c; line++) {
+            // Loop over each value in this line
+            for(int value = 0; value < n_r; value++) {
+                // Select the appropriate value from B
+                // This can be found at start + value*ldb + line + column*ldb*n_r
+                // start shifts everything down the B matrix, hence just added
+                // value shifts rightwards on each row, so we add value*ldb
+                // line shifts downwards, hence just added
+                // column shifts n_r steps rightwards, as each column is of width n_r, hence column*ldb*n_r is added
+                B_packed[output_index] = b[start + value*ldb + line + column*ldb*n_r];
+                // increment the index
+                output_index++;
+            }
+        }
+    }
+}
