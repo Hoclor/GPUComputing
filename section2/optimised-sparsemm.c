@@ -64,6 +64,8 @@ void optimised_sparsemm(const COO A, const COO B, COO *C)
             }
         }
     }
+    // Update Ctemp's NZ to the actual used NZ
+    Ctemp->NZ = usedNZ;
     // Multiplication is done, return the result in C
     *C = Ctemp;
 }
