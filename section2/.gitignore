@@ -2,3 +2,4 @@
 /sparsemm
 /*.out
 *.txt
+/result_matrices/*
