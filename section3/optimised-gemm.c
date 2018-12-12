@@ -87,16 +87,16 @@ void optimised_gemm(int m, int n, int k,
 
                     // Multiply the row from A with the column from B store it in temp_output
                     micro_kernel(loop_2, loop_3, loop_4, ldc, c);
-                        }
-                    }
                 }
             }
+        }
+    }
     // Free the allocated memory
     free(A_packed);
     free(B_packed);
     // free(A_splice);
     // free(B_splice);
-        }
+}
 
 /* Pack A from the given start index as needed for BLIS.
  * 
@@ -190,60 +190,60 @@ void micro_kernel(int loop_2, int loop_3, int loop_4, int ldc, double *c) {
  *
  * Currently set up to test A_packed (make sure the correct m_r, n_r, k_c, m_c values are set)
  */
-int main(int argc, char const *argv[])
-{
-    // Initialize variables
-    int start = 0; // Start index for packing
-    int lda = 4; // Leading dimension of A
-    int ldb = 4; // Leading dimension of B
-    int n = 4; // Width of the B matrix
+// int main(int argc, char const *argv[])
+// {
+//     // Initialize variables
+//     int start = 0; // Start index for packing
+//     int lda = 4; // Leading dimension of A
+//     int ldb = 4; // Leading dimension of B
+//     int n = 4; // Width of the B matrix
 
-    A_packed = calloc(k_c*m_c, sizeof(double));
-    B_packed = calloc(k_c*n, sizeof(double));
-    kernel_output = calloc(m_r*n_r, sizeof(double));
-    double *b = calloc(16, sizeof(double));
-    double *a = calloc(16, sizeof(double));
+//     A_packed = calloc(k_c*m_c, sizeof(double));
+//     B_packed = calloc(k_c*n, sizeof(double));
+//     kernel_output = calloc(m_r*n_r, sizeof(double));
+//     double *b = calloc(16, sizeof(double));
+//     double *a = calloc(16, sizeof(double));
 
-    a[0] = 0;
-    a[1] = 4;
-    a[2] = 8;
-    a[3] = 12;
-    a[4] = 1;
-    a[5] = 5;
-    a[6] = 9;
-    a[7] = 13;
-    a[8] = 2;
-    a[9] = 6;
-    a[10] = 10;
-    a[11] = 14;
-    a[12] = 3;
-    a[13] = 7;
-    a[14] = 11;
-    a[15] = 15;
-    b[0] = 0;
-    b[1] = 4;
-    b[2] = 8;
-    b[3] = 12;
-    b[4] = 1;
-    b[5] = 5;
-    b[6] = 9;
-    b[7] = 13;
-    b[8] = 2;
-    b[9] = 6;
-    b[10] = 10;
-    b[11] = 14;
-    b[12] = 3;
-    b[13] = 7;
-    b[14] = 11;
-    b[15] = 15;
+//     a[0] = 0;
+//     a[1] = 4;
+//     a[2] = 8;
+//     a[3] = 12;
+//     a[4] = 1;
+//     a[5] = 5;
+//     a[6] = 9;
+//     a[7] = 13;
+//     a[8] = 2;
+//     a[9] = 6;
+//     a[10] = 10;
+//     a[11] = 14;
+//     a[12] = 3;
+//     a[13] = 7;
+//     a[14] = 11;
+//     a[15] = 15;
+//     b[0] = 0;
+//     b[1] = 4;
+//     b[2] = 8;
+//     b[3] = 12;
+//     b[4] = 1;
+//     b[5] = 5;
+//     b[6] = 9;
+//     b[7] = 13;
+//     b[8] = 2;
+//     b[9] = 6;
+//     b[10] = 10;
+//     b[11] = 14;
+//     b[12] = 3;
+//     b[13] = 7;
+//     b[14] = 11;
+//     b[15] = 15;
 
-    pack_a(start, a, lda);
-    pack_b(start, n, b, ldb);
-    micro_kernel();
+//     pack_a(start, a, lda);
+//     pack_b(start, n, b, ldb);
+//     micro_kernel();
 
-    for(int i = 0; i < m_r*n_r; i++) {
-        printf("%d: %f\n", i, kernel_output[i]);
-    }
+//     for(int i = 0; i < m_r*n_r; i++) {
+//         printf("%d: %f\n", i, kernel_output[i]);
+//     }
     
-    return 0;
-}
+//     return 0;
+// }
