@@ -14,10 +14,12 @@ const int m_c = 4;
 
 // Global variable to store the packed subarray of A
 double *A_packed;
+// Global variable to store the spliced subarray of A_packed
+double *A_splice;
 // Global variable to store the packed subarray of B
 double *B_packed;
-// Global variable to store the output of the micro kernel (matrix multiplication)
-double *kernel_output;
+// Global variable to store the spliced subarray of B_packed
+double *B_splice;
 
 /* TODO
  *
@@ -147,28 +149,29 @@ void pack_b(int start, const int n, const double *b, const int ldb) {
     }
 }
 
-/* Apply the micro kernel, i.e. matrix multiplication of A_packed * B_packed
+/* Apply the micro kernel, i.e. matrix multiplication of A_splice * B_splice
  * 
- * All required variables are globally defined, so no inputs are required.
- * If called out of order may result in segmentation fault (if kernel_output, A_packed or B_packed are not correctly allocated memory/initialized)
- * 
- * Overwrites any previously stored values in kernel_output when called.
+ * All required variables for multiplication are globally defined.
+ * The input variables define where in C the output should be stored:
+ *      loop_2 + loop_4 tells us how far down the column we are
+ *      loop_3 tells us how many columns right we are, i.e. loop_3*ldc steps in the 1D matrix
+ * If called out of order may result in segmentation fault (if A_splice or B_splice are not correctly allocated memory/initialized)
  */
-void micro_kernel() {
-    // Create a counter variable to keep track of which index of kernel_output we're inserting into
-    // Loop over each column in A_packed and row in B_packed as pairs (i.e. column 0 row 0, column 1 row 1, etc.)
+void micro_kernel(int loop_2, int loop_3, int loop_4, int ldc, double *c) {
+    // Compute the start index
+    int start = loop_2 + loop_4 + ldc*loop_3;
+    // Loop over each column in A_splice and row in B_splice as pairs (i.e. column 0 row 0, column 1 row 1, etc.)
     for(int index = 0; index < k_c; index++) {
-        int counter = 0;
-        // Loop over each value in the row of B_packed
+        // Loop over each value in the row of B_splice
         for(int B_val = 0; B_val < n_r; B_val++) {
-            // Loop over each value in the column of A_packed
+            // Loop over each value in the column of A_splice
             for(int A_val = 0; A_val < m_r; A_val++) {
                 // Multiply the values together, and store the result in kernel_output
                 // As we loop over the row first and the column second, the output will automatically be in column-major format
-                // The correct value of A_packed is found at [A_val + index*m_r], as index tracks which column we're in, and each column is m_r long. The value in B_packed is similarly found at [B_val + index*n_r], as each row is n_r long.
-                kernel_output[counter] += A_packed[A_val + index*m_r] * B_packed[B_val + index*n_r];
-                // Increment the counter variable
-                counter++;
+                // The correct value of A_splice is found at [A_val + index*m_r], as index tracks which column we're in, and each column is m_r long. The value in B_splice is similarly found at [B_val + index*n_r], as each row is n_r long.
+                c[start + A_val + B_val*ldc] += A_splice[A_val + index*m_r] * B_splice[B_val + index*n_r];
+                // Start = loop_2 + loop_4 + loop_3 * ldc
+                // Adjustment = A_val + B_val*ldc
             }
         }
     }
