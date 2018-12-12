@@ -27,12 +27,12 @@ void optimised_sparsemm(const COO A, const COO B, COO *C)
         int A_i = A->coords[a_coord_index].i;
         int A_j = A->coords[a_coord_index].j;
         for(int b_coord_index = 0; b_coord_index < B->NZ; b_coord_index++) {
-            // Check if the B coordinate matches the A coordinate (i.e. A = (a,b), B = (b,c))
-            int B_i = B->coords[a_coord_index].i;
-            int B_j = B->coords[a_coord_index].j;
+            // Check if the B.i coordinate matches the A.j coordinate (i.e. A = (a,b), B = (b,c))
+            int B_i = B->coords[b_coord_index].i;
+            int B_j = B->coords[b_coord_index].j;
             if(A_j == B_i) {
                 // Compute (a,b)*(b,c)
-                double resultData = A->data[a_coord_index]*B->data[b_coord_index];
+                double resultData = A->data[a_coord_index] * B->data[b_coord_index];
                 // Loop over all output coords so far to check if we have already computed a value at (a, c)
                 int coordExists = 0;
                 for(int c_coord_index = 0; c_coord_index < usedNZ; c_coord_index++) {
@@ -56,7 +56,7 @@ void optimised_sparsemm(const COO A, const COO B, COO *C)
                     // If we did not, add a new coord to C and increment usedNZ
                     struct coord newCoord;
                     newCoord.i = A_i;
-                    newCoord.j = A_j;
+                    newCoord.j = B_j;
                     Ctemp->coords[usedNZ] = newCoord;
                     Ctemp->data[usedNZ] = resultData;
                     usedNZ++;
