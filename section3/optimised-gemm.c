@@ -52,42 +52,50 @@ void optimised_gemm(int m, int n, int k,
 {
     // Allocate memory to A_packed and B_packed
     // A_packed will be k_c*m_c, B_packed will be k_c*n
-    A_packed = calloc(k_c*m_c, sizeof(double));
+    A_packed = calloc(m_c*k_c, sizeof(double));
     B_packed = calloc(k_c*n, sizeof(double));
-    // Allocate memory to kernel_output, of size m_r*n_r doubles
-    kernel_output = calloc(m_r*n_r, sizeof(double));
+    // Allocate memory to A_splice and B_splice
+    // A_splice will be m_r*k_c doubles, B_splice will be k_c*n_r doubles
+    A_splice = calloc(m_r*k_c, sizeof(double));
+    B_splice = calloc(k_c*n_r, sizeof(double));
 
-    // Split A into columns k_c wide. Access these simultaneously as the i'th index of column/row
+    // Split A into columns k_c wide and B into rows k_c tall. Access these simultaneously as the i'th index of column/row
     for(int loop_1 = 0; loop_1 < k; loop_1 += k_c) {
         // Pack the row from B
-        //TODO pack B
+        int b_start = loop_1; // The start is loop_1 values down in the left-most column of B
+        pack_b(b_start, n, b, ldb);
         // Split the column from A into blocks m_c tall
-        for(int loop_2 = 0; loop_2 < k; loop_2 += m_c) {
+        for(int loop_2 = 0; loop_2 < m; loop_2 += m_c) {
             // Pack the block from A
-            //TODO pack A
+            int a_start = loop_2 + loop_1*lda; // The start is loop_2 value down in the loop_1'th column of A
+            pack_a(a_start, a, lda); // 
             // Split the row from B into columns n_r wide
-            for(int loop_3 = 0; loop_3 < n; n_r) {
+            for(int loop_3 = 0; loop_3 < n; loop_3 += n_r) {
                 // Extract this column into a new data structure
+                // B_splice = memcpy(B_splice, &B_packed[loop_3*k_c], n_r*k_c*sizeof(double));
+                // Only store the pointer to the start of B_splice to avoid doing memcpy
+                B_splice = (B_packed + loop_3*k_c);
 
                 // Split the block from the column from A into rows m_r tall
                 for(int loop_4 = 0; loop_4 < m_c; loop_4 += m_r) {
                     // Extract this row into a new data structure
+                    // A_splice = memcpy(A_splice, &A_packed[loop_4*k_c], m_r*k_c*sizeof(double));
+                    // Do as aboe with B_splice
+                    A_splice = (A_packed + loop_4*k_c);
+
 
                     // Multiply the row from A with the column from B store it in temp_output
-
-                    // Loop over the columns of temp_output
-                    for(int loop_5 = 0; loop_5 < n_r; loop_5++) {
-                        // Loop over each value in these columns
-                        for(int loop_6 = 0; loop_6 < m_r; loop_6++) {
-                            // Move this value into the correct index of C
-                            //TODO insert into C
+                    micro_kernel(loop_2, loop_3, loop_4, ldc, c);
                         }
                     }
                 }
             }
+    // Free the allocated memory
+    free(A_packed);
+    free(B_packed);
+    // free(A_splice);
+    // free(B_splice);
         }
-    }
-}
 
 /* Pack A from the given start index as needed for BLIS.
  * 
