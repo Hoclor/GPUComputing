@@ -8,7 +8,14 @@ void pack_a(int start, const double *a, const int lda);
 void pack_b(int start, const int n, const double *b, const int ldb);
 void micro_kernel(int loop_2, int loop_3, int loop_4, int ldc, double *c);
 
-const int m_r = 4;
+// Original values
+// const int m_r = 4;
+// const int n_r = 8;
+// const int k_c = 256;
+// const int m_c = 512;
+
+// Experimental values
+const int m_r = 64;
 const int n_r = 8;
 const int k_c = 256;
 const int m_c = 512;
@@ -69,7 +76,7 @@ void optimised_gemm(int m, int n, int k,
         for(int loop_2 = 0; loop_2 < m; loop_2 += m_c) {
             // Pack the block from A
             int a_start = loop_2 + loop_1*lda; // The start is loop_2 value down in the loop_1'th column of A
-            pack_a(a_start, a, lda); // 
+            pack_a(a_start, a, lda);
             // Split the row from B into columns n_r wide
             for(int loop_3 = 0; loop_3 < n; loop_3 += n_r) {
                 // Extract this column into a new data structure
@@ -83,7 +90,6 @@ void optimised_gemm(int m, int n, int k,
                     // A_splice = memcpy(A_splice, &A_packed[loop_4*k_c], m_r*k_c*sizeof(double));
                     // Do as aboe with B_splice
                     A_splice = (A_packed + loop_4*k_c);
-
 
                     // Multiply the row from A with the column from B store it in temp_output
                     micro_kernel(loop_2, loop_3, loop_4, ldc, c);
