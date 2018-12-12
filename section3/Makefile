@@ -1,4 +1,4 @@
-CFLAGS = -pg -O3 -march=native -D_GNU_SOURCE -Wall -Wextra
+CFLAGS = -pg -O3 -march=native -D_GNU_SOURCE -Wall -Wextra -std=c11
 LDFLAGS = -lm
 CC = gcc
 
