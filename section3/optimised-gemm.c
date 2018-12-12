@@ -1,16 +1,17 @@
+#include<stdlib.h>
+
 void basic_gemm(int, int, int,
                 const double *, int,
                 const double *, int,
                 double *, int);
+void pack_a(int start, const double *a, const int lda);
+void pack_b(int start, const int n, const double *b, const int ldb);
+void micro_kernel(int loop_2, int loop_3, int loop_4, int ldc, double *c);
 
-// const int m_r = 4;
-// const int n_r = 8;
-// const int k_c = 256;
-// const int m_c = 512;
-const int m_r = 2;
-const int n_r = 2;
-const int k_c = 4;
-const int m_c = 4;
+const int m_r = 4;
+const int n_r = 8;
+const int k_c = 256;
+const int m_c = 512;
 
 // Global variable to store the packed subarray of A
 double *A_packed;
