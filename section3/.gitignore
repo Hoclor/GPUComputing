@@ -2,3 +2,5 @@
 /gemm
 /*.out
 *.txt
+*.dat
+benchmark*
