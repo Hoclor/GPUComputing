@@ -52,6 +52,8 @@ void optimised_gemm(int m, int n, int k,
     // A_packed will be k_c*m_c, B_packed will be k_c*n
     A_packed = calloc(k_c*m_c, sizeof(double));
     B_packed = calloc(k_c*n, sizeof(double));
+    // Allocate memory to kernel_output, of size m_r*n_r doubles
+    kernel_output = calloc(m_r*n_r, sizeof(double));
 
     // Split A into columns k_c wide. Access these simultaneously as the i'th index of column/row
     for(int loop_1 = 0; loop_1 < k; loop_1 += k_c) {
