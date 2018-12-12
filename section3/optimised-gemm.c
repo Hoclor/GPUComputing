@@ -180,9 +180,15 @@ void micro_kernel() {
  */
 int main(int argc, char const *argv[])
 {
-    A_packed = calloc(16, sizeof(double));
-    B_packed = calloc(16, sizeof(double));
-    kernel_output = calloc(16, sizeof(double));
+    // Initialize variables
+    int start = 0; // Start index for packing
+    int lda = 4; // Leading dimension of A
+    int ldb = 4; // Leading dimension of B
+    int n = 4; // Width of the B matrix
+
+    A_packed = calloc(k_c*m_c, sizeof(double));
+    B_packed = calloc(k_c*n, sizeof(double));
+    kernel_output = calloc(m_r*n_r, sizeof(double));
     double *b = calloc(16, sizeof(double));
     double *a = calloc(16, sizeof(double));
 
@@ -218,16 +224,12 @@ int main(int argc, char const *argv[])
     b[13] = 7;
     b[14] = 11;
     b[15] = 15;
-    int start = 0;
-    int lda = 4;
-    int ldb = 4;
-    int n = 4;
 
     pack_a(start, a, lda);
     pack_b(start, n, b, ldb);
     micro_kernel();
 
-    for(int i = 0; i < 16; i++) {
+    for(int i = 0; i < m_r*n_r; i++) {
         printf("%d: %f\n", i, kernel_output[i]);
     }
     
