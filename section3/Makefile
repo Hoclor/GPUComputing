@@ -4,12 +4,12 @@ CC = gcc
 
 OBJ = optimised-gemm.o basic-gemm.o
 
-BENCH_OUTPUT = benchmark.dat
+BENCH_OUTPUT = hamilton_benchmark_2.dat
 # BENCH_MIN = 20
 # BENCH_MAX = 1000
 # BENCH_STEP = 20
 BENCH_MIN = 512
-BENCH_MAX = 3072
+BENCH_MAX = 10240
 BENCH_STEP = 512
 
 .PHONY: check clean help
@@ -45,5 +45,4 @@ check: gemm
 bench: gemm
 	for n in $$(seq $(BENCH_MIN) $(BENCH_STEP) $(BENCH_MAX)); do \
           ./gemm $$n $$n $$n BENCH; \
-          @echo "Done with one iteration"; \
         done > $(BENCH_OUTPUT)
