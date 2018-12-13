@@ -15,23 +15,11 @@ void pack_a(int start, const double *a, const int lda);
 void pack_b(int start, const int n, const double *b, const int ldb);
 void micro_kernel(int loop_2, int loop_3, int loop_4, int ldc, double *c);
 
-// Original values
-// const int m_r = 4;
-// const int n_r = 8;
-// const int k_c = 256;
-// const int m_c = 512;
-
-// Experimental values
-// int m_r = 64;
-// int n_r = 8;
-// int k_c = 256;
-// int m_c = 512;
-
-// Experimental 2 values - from parameter testing results
-int m_r = 128;
-int n_r = 8;
-int k_c = 128;
-int m_c = 512;
+// Constant parameter values
+const int m_r = 64;
+const int n_r = 8;
+const int k_c = 256;
+const int m_c = 512;
 
 
 // Global variable to store the packed subarray of A
@@ -62,6 +50,26 @@ void optimised_gemm(int m, int n, int k,
                     const double *b, int ldb,
                     double *c, int ldc)
 {
+    /* Approach to dense matrix-matrix multiplication
+     *
+     * If m <= 512 and n <= 512 and k <= 512, use basic_gemm instead (faster)
+     *
+     * For any 'uneven' values, i.e.:
+     *  k % k_c != 0
+     *  m % m_c != 0
+     *  n % n_r != 0
+     *  m_c % m_r != 0
+     * 
+     * Handle the 'leftover' by padding the affected dimension of that stage of processing with zeros.
+     * E.g.: m_c = 5, m_r = 2
+     * in the third block of each column of A, a row of zeros will be added below it to make it 2 (=m_r) tall
+     */
+
+    if(m <= 512 && n <= 512 && k <= 512) {
+        basic_gemm(m, n, k, a, lda, b, ldb, c, ldc);
+        return;
+    }
+
     // Allocate memory to A_packed and B_packed
     // A_packed will be k_c*m_c, B_packed will be k_c*n
     A_packed = calloc(m_c*k_c, sizeof(double));
