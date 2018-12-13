@@ -98,7 +98,7 @@ void optimised_gemm(int m, int n, int k,
                     A_splice = (A_packed + loop_4*k_c);
 
                     // Multiply the row from A with the column from B store it in temp_output
-                    micro_kernel(loop_2, loop_3, loop_4, ldc, c); // Handle possible uneven constants inside micro_kernel
+                    micro_kernel(loop_2, loop_3, loop_4, ldc, c);
                 }
             }
         }
