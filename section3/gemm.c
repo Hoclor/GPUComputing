@@ -185,9 +185,9 @@ static void bench(int m, int n, int k, gemm_fn_t gemm)
     
     if (m*n < 10000) {
         /* For small matrices, run in a loop, to help with timing variability. */
-        repeats = 50;
+        repeats = 100;
     } else {
-        repeats = 2;
+        repeats = 5;
     }
 
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &start);
