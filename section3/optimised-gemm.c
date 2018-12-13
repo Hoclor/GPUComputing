@@ -71,9 +71,10 @@ void optimised_gemm(int m, int n, int k,
     }
 
     // Allocate memory to A_packed and B_packed
-    // A_packed will be k_c*m_c, B_packed will be k_c*n
+    // A_packed will be k_c*m_c, B_packed will be k_c*ceil(n/n_r)*n_r
+    // 1 + ((x - 1) / y) gives ceil(x/y), from https://stackoverflow.com/questions/2745074/fast-ceiling-of-an-integer-division-in-c-c
     A_packed = calloc(m_c*k_c, sizeof(double));
-    B_packed = calloc(k_c*n, sizeof(double));
+    B_packed = calloc(k_c*(1 + ((n - 1) / n_r))*n_r, sizeof(double));
     // Allocate memory to A_splice and B_splice
     // A_splice will be m_r*k_c doubles, B_splice will be k_c*n_r doubles
     A_splice = calloc(m_r*k_c, sizeof(double));
@@ -83,7 +84,7 @@ void optimised_gemm(int m, int n, int k,
     for(int loop_1 = 0; loop_1 < k; loop_1 += k_c) {
         // Pack the row from B
         int b_start = loop_1; // The start is loop_1 values down in the left-most column of B
-        pack_b(b_start, n, b, ldb);
+        pack_b(b_start, n, k, b, ldb); // Handle possible uneven constants inside pack_b
         // Split the column from A into blocks m_c tall
         for(int loop_2 = 0; loop_2 < m; loop_2 += m_c) {
             // Pack the block from A
@@ -150,25 +151,35 @@ void pack_a(int start, const double *a, const int lda) {
  * 
  * Output is returned using the global B_packed variable
  */
-void pack_b(int start, const int n, const double *b, const int ldb) {
+void pack_b(int start, const int n, const int k, const double *b, const int ldb) {
     // Output is stored in B_packed
 
     // store which index you're inserting into
     int output_index = 0;
 
     // Loop over each column in the output
-    for(int column = 0; column < n/n_r; column++) {
+    for(int column = 0; column < n; column += n_r) {
         // Loop over each line in this column
         for(int line = 0; line < k_c; line++) {
             // Loop over each value in this line
             for(int value = 0; value < n_r; value++) {
                 // Select the appropriate value from B
-                // This can be found at start + value*ldb + line + column*ldb*n_r
+                // This can be found at start + value*ldb + line + column*ldb
                 // start shifts everything down the B matrix, hence just added
                 // value shifts rightwards on each row, so we add value*ldb
                 // line shifts downwards, hence just added
                 // column shifts n_r steps rightwards, as each column is of width n_r, hence column*ldb*n_r is added
-                B_packed[output_index] = b[start + value*ldb + line + column*ldb*n_r];
+                int b_index = start + value*ldb + line + column*ldb;
+
+                // Check if this index value is outside of the matrix B (i.e. start + line >= k, or value + column >= n)
+                // If it is, set the value of B_packed to zero
+                if(start + line >= k || value + column >= n) {
+                    // First check: bottom of the matrix
+                    // Second check: right side of the matrix
+                    B_packed[output_index] = 0.0;
+                } else {
+                    B_packed[output_index] = b[b_index];
+                }
                 // increment the index
                 output_index++;
             }
