@@ -11,8 +11,8 @@ void basic_gemm(int, int, int,
                 const double *, int,
                 const double *, int,
                 double *, int);
-void pack_a(int start, const double *a, const int lda);
-void pack_b(int start, const int n, const double *b, const int ldb);
+void pack_a(int start, int loop_2, const int m, const int k, const double *a, const int lda);
+void pack_b(int start, const int n, const int k, const double *b, const int ldb);
 void micro_kernel(int loop_2, int loop_3, int loop_4, int ldc, double *c);
 
 // Constant parameter values
@@ -89,7 +89,7 @@ void optimised_gemm(int m, int n, int k,
         for(int loop_2 = 0; loop_2 < m; loop_2 += m_c) {
             // Pack the block from A
             int a_start = loop_2 + loop_1*lda; // The start is loop_2 value down in the loop_1'th column of A
-            pack_a(a_start, a, lda);
+            pack_a(a_start, loop_2, m, k, a, lda); // Handle possible uneven constants inside pack_a
             // Split the row from B into columns n_r wide
             for(int loop_3 = 0; loop_3 < n; loop_3 += n_r) {
                 // Extract this column into a new data structure
@@ -121,25 +121,36 @@ void optimised_gemm(int m, int n, int k,
  * 
  * Output is returned using the global A_packed variable
  */
-void pack_a(int start, const double *a, const int lda) {
+void pack_a(int start, int loop_2, const int m, const int k, const double *a, const int lda) {
     // Output is stored in A_packed
 
     // store which index you're inserting into
     int output_index = 0;
 
     // Loop over each row in the output
-    for(int row = 0; row < m_c/m_r; row++) {
+    for(int row = 0; row < m_c; row += m_r) {
         // Loop over each column in this row
         for(int column = 0; column < k_c; column++) {
             // Loop over each value in this column
             for(int value = 0; value < m_r; value++) {
                 // Select the appropriate value from A
-                // This can be found at start + value + column*lda + row*m_r
+                // This can be found at start + value + column*lda + row
                 // start shifts everything down the A matrix, hence just added
                 // value shifts downwards in each column, hence just added
                 // column shifts rightwards within each row, so we add column*lda
-                // row shifts m_r steps downwards, as each row is of height m_r, hence row*m_r is added
-                A_packed[output_index] = a[start + value + column*lda + row*m_r];
+                // row shifts downwards, as each row is of height m_r, hence row*m_r is added
+                int a_index = start + value + column*lda + row;
+
+                // Check if this index is outside of the block of A_i, the column of A_p, or the matrix of A
+                // That is, downward shift (loop_2 + value + row) must be < m and value + row must be < m_c
+                // And x position (i.e. which column value is in) must be within A, i.e.
+                // floor(start/m) + column must be < k
+                // Since start/m gets the # of column that start is in, and column shifts 1 column right each
+                if(loop_2 + value + row >= m || value + row >= m_c || start/m + column >= k) {
+                    A_packed[output_index] = 0.0;
+                } else {
+                    A_packed[output_index] = a[a_index];
+                }
                 // increment the index
                 output_index++;
             }
