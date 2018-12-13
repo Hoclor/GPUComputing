@@ -20,6 +20,12 @@ const int n_r = 8;
 const int k_c = 256;
 const int m_c = 512;
 
+// Experimental 2 values - from hamilton parameter test at size 1024 1024 1024
+//const int m_r = 128;
+//const int n_r = 8;
+//const int k_c = 128;
+//const int m_c = 512;
+
 // Global variable to store the packed subarray of A
 double *A_packed;
 // Global variable to store the spliced subarray of A_packed
