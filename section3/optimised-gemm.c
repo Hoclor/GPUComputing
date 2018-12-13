@@ -8,30 +8,17 @@ void pack_a(int start, const double *a, const int lda);
 void pack_b(int start, const int n, const double *b, const int ldb);
 void micro_kernel(int loop_2, int loop_3, int loop_4, int ldc, double *c);
 
-// Original values
-const int m_r = 4;
-const int n_r = 8;
-const int k_c = 256;
-const int m_c = 512;
-
-// Experimental values
-// const int m_r = 64;
+// Original values - from Dr. Mitchell
+// const int m_r = 4;
 // const int n_r = 8;
 // const int k_c = 256;
 // const int m_c = 512;
 
-// Experimental 2 values - from parameter testing results
-// const int m_r = 128;
-// const int n_r = 8;
-// const int k_c = 128;
-// const int m_c = 512;
-
-
-// Experimental 2 values - from hamilton parameter test at size 1024 1024 1024
-//const int m_r = 128;
-//const int n_r = 8;
-//const int k_c = 128;
-//const int m_c = 512;
+// Best values - from experimentation
+const int m_r = 64;
+const int n_r = 8;
+const int k_c = 256;
+const int m_c = 512;
 
 // Global variable to store the packed subarray of A
 double *A_packed;
