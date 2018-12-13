@@ -4,12 +4,12 @@ CC = gcc
 
 OBJ = optimised-gemm.o basic-gemm.o
 
-BENCH_OUTPUT = hamilton_benchmark_2.dat
+BENCH_OUTPUT = benchmarking/local_benchmark_4_8_256_512.dat
 # BENCH_MIN = 20
 # BENCH_MAX = 1000
 # BENCH_STEP = 20
 BENCH_MIN = 512
-BENCH_MAX = 10240
+BENCH_MAX = 5120
 BENCH_STEP = 512
 
 .PHONY: check clean help
