@@ -51,6 +51,11 @@ double *B_splice;
  * B has rank k x n
  * ldX is the leading dimension of the respective matrix.
  *
+ * Only works for values m, n, k such that:
+ *  m % m_c == m % m_r == 0
+ *  n % n_r == 0
+ *  k % k_c == 0
+ *
  * All matrices are stored in column major format.
  */
 void optimised_gemm(int m, int n, int k,
