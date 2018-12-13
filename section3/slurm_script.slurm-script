@@ -3,7 +3,7 @@
 #SBATCH -o myscript.%A.out
 #SBATCH -e myscript.%A.err
 #SBATCH -p par7.q
-#SBATCH -t 00:30:00
+#SBATCH -t 00:10:00
 #SBATCH --exclusive
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=24
