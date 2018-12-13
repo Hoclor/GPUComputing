@@ -1,17 +1,18 @@
 #!/bin/csh
-#SBATCH --job-name="gpu_computing_script"
+#SBATCH --job-name="level3_script"
 #SBATCH -o myscript.%A.out
 #SBATCH -e myscript.%A.err
-#SBATCH -p par6.q
+#SBATCH -p par7.q
 #SBATCH -t 00:05:00
 #SBATCH --exclusive
 #SBATCH --nodes=1
-#SBATCH --cpus-per-task=16
+#SBATCH --cpus-per-task=24
 #SBATCH --mail-user=simon.gokstorp@durham.ac.uk
 #SBATCH --mail-type=ALL
 
+#source etc/profile.d/modules.sh
 module load intel/xe_2018.2
-./sparsemm result_matrices/result.matrix small_matrices/DG1-ip-laplace-2D.matrix small_matrices/DG1-mass-2D.matrix
+module load intel/analyze/2018.2
 
-gprof sparsemm > gprof_basic_sparsemm_DG1ip_DG1mass_par6.txt
+advixe-cl -colect roofline -- ./sparsemm result_matrices/result.matrix small_matrices/DG1-ip-laplace-2D.matrix small_matrices/DG1-mass-2D.matrix
 
