@@ -49,7 +49,7 @@ void optimised_gemm(int m, int n, int k,
 {
     /* Approach to dense matrix-matrix multiplication
      *
-     * If m <= 512 and n <= 512 and k <= 512, use basic_gemm instead (faster)
+     * If m <= 700 and n <= 700 and k <= 700, use basic_gemm instead as it is faster
      *
      * For any 'uneven' values, i.e.:
      *  k % k_c != 0
@@ -62,7 +62,7 @@ void optimised_gemm(int m, int n, int k,
      * in the third block of each column of A, a row of zeros will be added below it to make it 2 (=m_r) tall
      */
 
-    if(m <= 512 && n <= 512 && k <= 512) {
+    if(m <= 700 && n <= 700 && k <= 700) {
         basic_gemm(m, n, k, a, lda, b, ldb, c, ldc);
         return;
     }
