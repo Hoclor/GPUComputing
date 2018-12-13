@@ -15,10 +15,17 @@ void micro_kernel(int loop_2, int loop_3, int loop_4, int ldc, double *c);
 // const int m_c = 512;
 
 // Experimental values
-const int m_r = 64;
-const int n_r = 8;
-const int k_c = 256;
-const int m_c = 512;
+// int m_r = 64;
+// int n_r = 8;
+// int k_c = 256;
+// int m_c = 512;
+
+// Experimental 2 values - from parameter testing results
+int m_r = 128;
+int n_r = 8;
+int k_c = 128;
+int m_c = 512;
+
 
 // Global variable to store the packed subarray of A
 double *A_packed;
