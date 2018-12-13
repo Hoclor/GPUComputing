@@ -1,3 +1,10 @@
+/* This file implements a version of optimised-gemm.c designed to additionally deal with
+ * non-ideal input sizes, i.e. not following all of the following constraints:
+ *  m % m_c == m % m_r == 0
+ *  n % n_r == 0
+ *  k % k_c == 0
+ */
+
 #include<stdlib.h>
 
 void basic_gemm(int, int, int,
