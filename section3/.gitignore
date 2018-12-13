@@ -4,3 +4,5 @@
 *.err
 *.txt
 *.pdf
+*.dat
+!*hamilton*.dat
