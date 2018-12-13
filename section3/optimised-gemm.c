@@ -38,11 +38,8 @@ double *B_splice;
  * B has rank k x n
  * ldX is the leading dimension of the respective matrix.
  * 
- * Only works for values m, n, k such that:
- *  m % m_c == m % m_r == 0
- *  n % n_r == 0
- *  k % k_c == 0
- *
+ * for m, n, k all <= 512, basic dense multiplication is performed as this is faster
+ * 
  * All matrices are stored in column major format.
  */
 void optimised_gemm(int m, int n, int k,
@@ -92,20 +89,16 @@ void optimised_gemm(int m, int n, int k,
             pack_a(a_start, loop_2, m, k, a, lda); // Handle possible uneven constants inside pack_a
             // Split the row from B into columns n_r wide
             for(int loop_3 = 0; loop_3 < n; loop_3 += n_r) {
-                // Extract this column into a new data structure
-                // B_splice = memcpy(B_splice, &B_packed[loop_3*k_c], n_r*k_c*sizeof(double));
-                // Only store the pointer to the start of B_splice to avoid doing memcpy
+                // Set a pointer to the start of the current column
                 B_splice = (B_packed + loop_3*k_c);
 
                 // Split the block from the column from A into rows m_r tall
                 for(int loop_4 = 0; loop_4 < m_c; loop_4 += m_r) {
-                    // Extract this row into a new data structure
-                    // A_splice = memcpy(A_splice, &A_packed[loop_4*k_c], m_r*k_c*sizeof(double));
-                    // Do as aboe with B_splice
+                    // Set a pointer to the start of the current row
                     A_splice = (A_packed + loop_4*k_c);
 
                     // Multiply the row from A with the column from B store it in temp_output
-                    micro_kernel(loop_2, loop_3, loop_4, ldc, c);
+                    micro_kernel(loop_2, loop_3, loop_4, ldc, c); // Handle possible uneven constants inside micro_kernel
                 }
             }
         }
