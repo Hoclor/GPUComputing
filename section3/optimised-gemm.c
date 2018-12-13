@@ -29,27 +29,17 @@ double *B_packed;
 // Global variable to store the spliced subarray of B_packed
 double *B_splice;
 
-/* TODO
- *
- * 1. Implement B packing function
- * 2. Implement A packing function
- * 3. Rewrite basic-gemm for mix of column-major and row-major formats
- * 4. Write the correct indexing logic for each loop:
- *      - Loop 1
- *      - Loop 2
- *      - Loop 3
- *      - Loop 4
- *      - Loop 5
- *      - Loop 6
- */
-
-
 /* Compute C = C + A*B
  *
  * C has rank m x n
  * A has rank m x k
  * B has rank k x n
  * ldX is the leading dimension of the respective matrix.
+ * 
+ * Only works for values m, n, k such that:
+ *  m % m_c == m % m_r == 0
+ *  n % n_r == 0
+ *  k % k_c == 0
  *
  * All matrices are stored in column major format.
  */
