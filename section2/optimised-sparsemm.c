@@ -1,14 +1,69 @@
 #include "utils.h"
 
+struct sorting_coords {
+    int i, j;
+    double dat;
+};
+typedef struct sorting_coords triplet;
+
 void basic_sparsemm(const COO, const COO, COO *);
 void basic_sparsemm_sum(const COO, const COO, const COO,
                         const COO, const COO, const COO,
                         COO *);
+int cmpfunc(void *a, void *b);
+void sort_COO(const COO A, COO *O);
+
+
+int cmpfunc(void *a, void *b) {
+    triplet *tripletA = (triplet*) a;
+    triplet *tripletB = (triplet*) b;
+
+    // -1 == don't switch ('lower' to the left)
+
+    // if A's row < B's row, return -1
+    if(tripletA->i < tripletB->i) {
+        return -1;
+    }
+    // if they're the same and A's column <= B's column, return -1
+    else if(tripletA->i == tripletB->i && tripletA->j <= tripletA->j) {
+        return -1;
+    }
+    // Otherwise, A's row > B's row, or A's row = B's row but A's column > B's column, so swap them
+    return 1;
+}
+
+/* Sorts the coordinates and data of the input COO by row, then column
+ * The result is returned in-place.
+ */
+void sort_COO(const COO A, COO *O) {
+    // Create a COO to store the output in
+    COO sp;
+    alloc_sparse(A->m, A->n, A->NZ, &sp);
+
+    // Create the list of sorting_coords
+    struct sorting_coords *list = calloc(A->NZ, sizeof(struct sorting_coords));
+    for(int i = 0; i < A->NZ; i++) {
+        list[i].i = A->coords[i].i;
+        list[i].j = A->coords[i].j;
+        list[i].dat = A->data[i];
+    }
+    // Sort the list by row
+    qsort(list, A->NZ, sizeof(struct sorting_coords), cmpfunc);
+
+    // Assign the coords and data of sp from the sorted list
+    for(int i = 0; i < sp->NZ; i++) {
+        sp->coords[i].i = list[i].i;
+        sp->coords[i].j = list[i].j;
+        sp->data[i] = list[i].dat;
+    }
+    // Point O to sp
+    *O = sp;
+}
 
 /* Computes C = A*B.
  * C should be allocated by this routine.
  */
-void optimised_sparsemm(const COO A, const COO B, COO *C)
+void optimised_sparsemm(const COO unsortedA, const COO unsortedB, COO *C)
 {
     // Create a temporary _p_COO object
     *C = NULL;
@@ -17,13 +72,20 @@ void optimised_sparsemm(const COO A, const COO B, COO *C)
     int usedNZ = 0;
     // Get m and n from A and B: m = A.m, n = B.n
     // Take NZ as (A.NZ + b.NZ) * 5
-    alloc_sparse(A->m, B->n, (A->NZ + B->NZ)*5, &Ctemp);
+    alloc_sparse(unsortedA->m, unsortedB->n, (unsortedA->NZ + unsortedB->NZ)*5, &Ctemp);
+
+    // sort the A and B matrices so that it is sorted by row first, then by column
+    COO A;
+    COO B;
+    sort_COO(unsortedA, &A);
+    sort_COO(unsortedB, &B);
 
     // Loop over all (a,b) coordinates in A
     // For each of these, look at the coordinates in B
     // For each coordinate (b, c), add (a,b)*(b,c) to (a,c) in output
     for(int a_coord_index = 0; a_coord_index < A->NZ; a_coord_index++) {
         // Get the coordinate in A
+        int b_row_found = 0; 
         int A_i = A->coords[a_coord_index].i;
         int A_j = A->coords[a_coord_index].j;
         for(int b_coord_index = 0; b_coord_index < B->NZ; b_coord_index++) {
@@ -31,18 +93,27 @@ void optimised_sparsemm(const COO A, const COO B, COO *C)
             int B_i = B->coords[b_coord_index].i;
             int B_j = B->coords[b_coord_index].j;
             if(A_j == B_i) {
+                b_row_found = 1;
                 // Compute (a,b)*(b,c)
                 double resultData = A->data[a_coord_index] * B->data[b_coord_index];
                 // Loop over all output coords so far to check if we have already computed a value at (a, c)
                 int coordExists = 0;
+                int c_row_found = 0;
                 for(int c_coord_index = 0; c_coord_index < usedNZ; c_coord_index++) {
                     // Check if this coordinate matches (a, c)
                     int C_i = Ctemp->coords[c_coord_index].i;
                     int C_j = Ctemp->coords[c_coord_index].j;
-                    if(C_i == A_i && C_j == B_j) {
-                        // Add the resultData to  (C_i, C_j)
-                        Ctemp->data[c_coord_index] += resultData;
-                        coordExists = 1;
+                    if(C_i == A_i) {
+                        c_row_found = 1;
+                        if(C_j == B_j) {
+                            // Add the resultData to  (C_i, C_j)
+                            Ctemp->data[c_coord_index] += resultData;
+                            coordExists = 1;
+                            break;
+                        }
+                    } else if(c_row_found) {
+                        // We won't find the desired coordinates, as C is sorted by row then by column,
+                        // and we have now searched all coords with the correct row
                         break;
                     }
                 }
@@ -61,6 +132,9 @@ void optimised_sparsemm(const COO A, const COO B, COO *C)
                     Ctemp->data[usedNZ] = resultData;
                     usedNZ++;
                 }
+            } else if(b_row_found) {
+                // We won't find any other matches for this A, so skip to the next coordinate
+                break;
             }
         }
     }
