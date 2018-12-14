@@ -153,7 +153,25 @@ void optimised_sparsemm_sum(const COO A, const COO B, const COO C,
                             const COO D, const COO E, const COO F,
                             COO *O)
 {
-    return basic_sparsemm_sum(A, B, C, D, E, F, O);
+    // First sum the matrices A, B, C together
+    COO I_1;
+    add_sparse_matrices(A, B, &I_1);
+    // Add I_1 and C
+    COO I_2;
+    add_sparse_matrices(I_1, C, &I_2);
+
+    // Next, sum the matrices D, E, F together
+    COO J_1;
+    add_sparse_matrices(D, E, &J_1);
+    // Add I_1 and C
+    COO J_2;
+    add_sparse_matrices(J_1, F, &J_2);
+    // free up I_1 and J_1 as these are no longer needed
+    free_sparse(&I_1);
+    free_sparse(&J_1);
+
+    // Finally, multiply these using optimised_sparsemm above
+    optimised_sparsemm(I_2, J_2, O);
 }
 
 void add_sparse_matrices(const COO A, const COO B, COO *O) {
