@@ -43,11 +43,6 @@ static int check_sparsemm()
         }
     }
 
-    // Print output if the check passes
-    if(!pass) {
-        fprintf(stdout, "MM Passed check\n");
-    }
-    
     free(basic);
     free(opt);
     free_sparse(&A);
