@@ -1,9 +1,9 @@
 #!/bin/csh
-#SBATCH --job-name="gpu_computing_script"
+#SBATCH --job-name="parameter_bench_small"
 #SBATCH -o myscript.%A.out
 #SBATCH -e myscript.%A.err
 #SBATCH -p par7.q
-#SBATCH -t 00:15:00
+#SBATCH -t 00:30:00
 #SBATCH --exclusive
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=24

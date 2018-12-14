@@ -22,7 +22,7 @@ void micro_kernel(int loop_2, int loop_3, int loop_4, int ldc, double *c);
 // const int m_c = 512;
 
 // Best values - from experimentation
-const int m_r = 64;
+const int m_r = 4;
 const int n_r = 8;
 const int k_c = 256;
 const int m_c = 512;
