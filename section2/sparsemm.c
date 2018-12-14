@@ -152,7 +152,6 @@ int main(int argc, char **argv)
         reader(argv[2], &A);
         reader(argv[3], &B);
         optimised_sparsemm(A, B, &O);
-        // basic_sparsemm(A, B, &O);
 
         free_sparse(&A);
         free_sparse(&B);

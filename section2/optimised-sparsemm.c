@@ -1,4 +1,5 @@
 #include "utils.h"
+#include<stdlib.h>
 
 struct sorting_coords {
     int i, j;
@@ -12,6 +13,7 @@ void basic_sparsemm_sum(const COO, const COO, const COO,
                         COO *);
 int cmpfunc(void *a, void *b);
 void sort_COO(const COO A, COO *O);
+void add_sparse_matrices(const COO A, const COO B, COO *O);
 
 
 int cmpfunc(void *a, void *b) {
@@ -151,5 +153,107 @@ void optimised_sparsemm_sum(const COO A, const COO B, const COO C,
                             const COO D, const COO E, const COO F,
                             COO *O)
 {
-    return basic_sparsemm_sum(A, B, C, D, E, F, O);
+    // First sum the matrices A, B, C together
+    COO I_1;
+    add_sparse_matrices(A, B, &I_1);
+    // Add I_1 and C
+    COO I_2;
+    add_sparse_matrices(I_1, C, &I_2);
+
+    // Next, sum the matrices D, E, F together
+    COO J_1;
+    add_sparse_matrices(D, E, &J_1);
+    // Add I_1 and C
+    COO J_2;
+    add_sparse_matrices(J_1, F, &J_2);
+    // free up I_1 and J_1 as these are no longer needed
+    free_sparse(&I_1);
+    free_sparse(&J_1);
+
+    // Finally, multiply these using optimised_sparsemm above
+    optimised_sparsemm(I_2, J_2, O);
+}
+
+void add_sparse_matrices(const COO A, const COO B, COO *O) {
+    // Create a COO for the output
+    COO sp;
+    // Guess that we will need A->NZ + B->NZ entries (this is the cap)
+    alloc_sparse(A->m, A->n, A->NZ + B->NZ, &sp);
+
+    // Perform a merge-sort-style merge of A and B coordinates - requires they are sorted, so sort them first
+    COO sortedA;
+    COO sortedB;
+
+    sort_COO(A, &sortedA);
+    sort_COO(B, &sortedB);
+
+    // Keep a counter of the current element of A, and same for B
+    int currentA = 0;
+    int currentB = 0;
+    // Keep a counter of which item we're inserting into sp
+    int output_counter = 0;
+
+    while(currentA < A->NZ && currentB < B->NZ) {
+        // Compare the coordinates of the current A item and current B item
+        // If itemA < itemB, append itemA to sp and increment currentA
+        // If itemB < itemA, do the same but for B
+        // If itemA == itemB, add them together, append the result, and increment both currentA and currentB
+        int itemAi = sortedA->coords[currentA].i;
+        int itemAj = sortedA->coords[currentA].j;
+        int itemBi = sortedB->coords[currentB].i;
+        int itemBj = sortedB->coords[currentB].j;
+
+        if(itemAi < itemBi || (itemAi == itemBi && itemAj < itemBj)) {
+            // Append itemA and increment currentA
+            sp->coords[output_counter].i = itemAi;
+            sp->coords[output_counter].j = itemAj;
+            sp->data[output_counter] = sortedA->data[currentA];
+            output_counter++;
+            currentA++;
+        // Check if they're the same
+        } else if(itemBi == itemAi && itemBj == itemAj) {
+            // Append the sum of their data entries
+            sp->coords[output_counter].i = itemAi;
+            sp->coords[output_counter].j = itemAj;
+            sp->data[output_counter] = sortedA->data[currentA] + sortedB->data[currentB];
+            output_counter++;
+            currentA++;
+            currentB++;
+        } else {
+            // The final case is that itemB < itemA coordinates wise, so append itemB and increment currentB
+            sp->coords[output_counter].i = itemBi;
+            sp->coords[output_counter].j = itemBj;
+            sp->data[output_counter] = sortedB->data[currentB];
+            output_counter++;
+            currentB++;
+        }
+    }
+    // Keep appending from sortedA or sortedB, whichever isn't empty
+    while(currentA < A->NZ) {
+        // Get the item from A
+        int itemAi = sortedA->coords[currentA].i;
+        int itemAj = sortedA->coords[currentA].j;
+        // Input it into sp
+        sp->coords[output_counter].i = itemAi;
+        sp->coords[output_counter].j = itemAj;
+        sp->data[output_counter] = sortedA->data[currentA];
+        // increment currentA and output_counter
+        currentA++;
+        output_counter++;
+    }
+    while(currentB < B->NZ) {
+        int itemBi = sortedB->coords[currentB].i;
+        int itemBj = sortedB->coords[currentB].j;
+        // Input it into sp
+        sp->coords[output_counter].i = itemBi;
+        sp->coords[output_counter].j = itemBj;
+        sp->data[output_counter] = sortedB->data[currentB];
+        // increment currentB and output_counter
+        currentB++;
+        output_counter++;
+    }
+    // Set sp->NZ to the actual NZ (output_counter)
+    sp->NZ = output_counter;
+    // return the output in the pointer *O
+    *O = sp;
 }
