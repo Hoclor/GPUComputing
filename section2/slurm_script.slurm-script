@@ -2,11 +2,11 @@
 #SBATCH --job-name="level3_script"
 #SBATCH -o myscript.%A.out
 #SBATCH -e myscript.%A.err
-#SBATCH -p par7.q
-#SBATCH -t 00:05:00
-#SBATCH --exclusive
+#SBATCH -p test.q
+#SBATCH -t 00:01:00
+# --exclusive
 #SBATCH --nodes=1
-#SBATCH --cpus-per-task=24
+#SBATCH --cpus-per-task=4
 #SBATCH --mail-user=simon.gokstorp@durham.ac.uk
 #SBATCH --mail-type=ALL
 
@@ -14,5 +14,6 @@
 module load intel/xe_2018.2
 module load intel/analyze/2018.2
 
-advixe-cl -colect roofline -- ./sparsemm result_matrices/result.matrix small_matrices/DG1-ip-laplace-2D.matrix small_matrices/DG1-mass-2D.matrix
-
+#advixe-cl -collect roofline -- ./sparsemm result_matrices/result.matrix small_matrices/DG1-ip-laplace-2D.matrix small_matrices/DG1-mass-2D.matrix
+./sparsemm out.matrix small_matrices/DG1-ip-laplace-2D.matrix small_matrices/DG1-mass-2D.matrix
+gprof sparsemm > hamilton_Question1.out

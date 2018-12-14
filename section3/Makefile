@@ -4,7 +4,7 @@ CC = gcc
 
 OBJ = optimised-gemm.o basic-gemm.o
 
-BENCH_OUTPUT = benchmarking/temp_benchmark_0.dat
+BENCH_OUTPUT = benchmarking/hamilton_small_4_8_256_512.dat
 # Parameters for small-matrix benchmark
 BENCH_MIN = 20
 BENCH_MAX = 2000
