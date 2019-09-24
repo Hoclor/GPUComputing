@@ -1,4 +1,4 @@
-# GPUComputing
+# Optimising Matrix-Matrix Multiplication
 Code for Optimising Matrix-Matrix Multiplication assignment for GPU, Many-Core and Cluster Computing as part of Contemporary Computer Science IV module, taken in my fourth year of Computer Science at Durham University. Skeleton code for level 3 (section 2) and level 4 (section 3) were provided and cloned from https://github.com/wence-/ccs-l3-coursework-2018 and https://github.com/wence-/ccs-l4-coursework-2018 respectively.
 
 ## Level 3
